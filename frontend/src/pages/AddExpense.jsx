@@ -1,13 +1,16 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import api from '../api/axios';
-import { Save, X, Calendar, Tag, FileText, IndianRupee, CreditCard, StickyNote, Loader2, Layers } from 'lucide-react';
+import { Save, X, Calendar, Tag, FileText, IndianRupee, CreditCard, StickyNote, Loader2, Layers, Plus } from 'lucide-react';
+import Modal from '../components/Modal';
 
 const AddExpense = () => {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
   const [categories, setCategories] = useState([]);
   const [people, setPeople] = useState([]);
+  const [showPersonModal, setShowPersonModal] = useState(false);
+  const [personForm, setPersonForm] = useState({ name: '', email: '', phone: '' });
   const [recentExpenses, setRecentExpenses] = useState([]);
   const [formData, setFormData] = useState({
     expense_date: new Date().toISOString().split('T')[0],
@@ -72,24 +75,16 @@ const AddExpense = () => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
+  const handlePersonFormChange = (e) => {
+    setPersonForm({ ...personForm, [e.target.name]: e.target.value });
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
     try {
       const payload = { ...formData };
-      // handle creating a new person
-      if (payload.person === '__new') {
-        const pname = payload.new_person_name;
-        if (pname) {
-          const pRes = await api.post('expenses/people/', { name: pname });
-          payload.person = pRes.data.id;
-        } else {
-          alert('Please provide a person name');
-          setLoading(false);
-          return;
-        }
-      }
-      // remove helper field
+      // remove any helper fields
       delete payload.new_person_name;
       await api.post('expenses/expenses/', payload);
       navigate('/');
@@ -98,6 +93,26 @@ const AddExpense = () => {
       alert('Failed to save expense');
     } finally {
       setLoading(false);
+    }
+  };
+
+  const openPersonModal = () => {
+    setPersonForm({ name: '', email: '', phone: '' });
+    setShowPersonModal(true);
+  };
+
+  const handleCreatePerson = async (e) => {
+    e.preventDefault();
+    if (!personForm.name) return alert('Please enter a name');
+    try {
+      const res = await api.post('expenses/people/', personForm);
+      const created = res.data;
+      setPeople(prev => [created, ...prev]);
+      setFormData(prev => ({ ...prev, person: created.id }));
+      setShowPersonModal(false);
+    } catch (err) {
+      console.error('Failed to create person', err);
+      alert('Failed to create person');
     }
   };
 
@@ -176,7 +191,13 @@ const AddExpense = () => {
                 name="person"
                 className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary focus:border-transparent outline-none transition-all appearance-none bg-white"
                 value={formData.person || ''}
-                onChange={handleChange}
+                onChange={(e) => {
+                  if (e.target.value === '__new') {
+                    openPersonModal();
+                    return;
+                  }
+                  handleChange(e);
+                }}
               >
                 <option value="">No person</option>
                 {people.map(p => (
@@ -184,9 +205,11 @@ const AddExpense = () => {
                 ))}
                 <option value="__new">Create new...</option>
               </select>
-              {formData.person === '__new' && (
-                <input type="text" placeholder="New person name" name="new_person_name" value={formData.new_person_name || ''} onChange={handleChange} className="w-full px-4 py-3 border border-gray-200 rounded-xl" />
-              )}
+              <div className="flex items-center gap-2">
+                <button type="button" onClick={openPersonModal} className="mt-2 inline-flex items-center gap-2 px-3 py-2 rounded-lg bg-gray-50 hover:bg-gray-100 text-sm">
+                  <Plus className="h-4 w-4" /> Quick add
+                </button>
+              </div>
             </div>
 
             {/* Amount */}
@@ -268,6 +291,26 @@ const AddExpense = () => {
         </form>
       </div>
     </div>
+      <Modal isOpen={showPersonModal} title="Create Person" onClose={() => setShowPersonModal(false)}>
+        <form onSubmit={handleCreatePerson} className="space-y-4">
+          <div>
+            <label className="text-sm font-medium text-gray-700">Name</label>
+            <input name="name" value={personForm.name} onChange={handlePersonFormChange} className="w-full mt-2 px-3 py-2 border rounded-xl" required />
+          </div>
+          <div>
+            <label className="text-sm font-medium text-gray-700">Email</label>
+            <input name="email" value={personForm.email} onChange={handlePersonFormChange} className="w-full mt-2 px-3 py-2 border rounded-xl" />
+          </div>
+          <div>
+            <label className="text-sm font-medium text-gray-700">Phone</label>
+            <input name="phone" value={personForm.phone} onChange={handlePersonFormChange} className="w-full mt-2 px-3 py-2 border rounded-xl" />
+          </div>
+          <div className="flex justify-end gap-2">
+            <button type="button" onClick={() => setShowPersonModal(false)} className="px-4 py-2 rounded-lg bg-gray-100">Cancel</button>
+            <button type="submit" className="px-4 py-2 rounded-lg bg-primary text-white">Create</button>
+          </div>
+        </form>
+      </Modal>
   );
 };
 
