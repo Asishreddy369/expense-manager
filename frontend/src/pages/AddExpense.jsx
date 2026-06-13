@@ -1,12 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import api from '../api/axios';
-import { Save, X, Calendar, Tag, FileText, IndianRupee, CreditCard, StickyNote, Loader2 } from 'lucide-react';
+import { Save, X, Calendar, Tag, FileText, IndianRupee, CreditCard, StickyNote, Loader2, Layers } from 'lucide-react';
 
 const AddExpense = () => {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
   const [categories, setCategories] = useState([]);
+  const [people, setPeople] = useState([]);
   const [recentExpenses, setRecentExpenses] = useState([]);
   const [formData, setFormData] = useState({
     expense_date: new Date().toISOString().split('T')[0],
@@ -27,11 +28,27 @@ const AddExpense = () => {
         ]);
         setCategories(catRes.data);
         setRecentExpenses(expRes.data);
+        // fetch people
+        try {
+          const peopleRes = await api.get('expenses/people/');
+          setPeople(peopleRes.data);
+        } catch (e) {
+          // ignore
+        }
       } catch (error) {
         console.error('Error fetching categories:', error);
       }
     };
     fetchData();
+  }, []);
+
+  // Pre-fill expense_name from query param ?person=Name
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const person = params.get('person');
+    if (person) {
+      setFormData(prev => ({ ...prev, expense_name: person }));
+    }
   }, []);
 
   // Smart Behavior: Auto-fill if name matches a recent expense
@@ -59,7 +76,22 @@ const AddExpense = () => {
     e.preventDefault();
     setLoading(true);
     try {
-      await api.post('expenses/expenses/', formData);
+      const payload = { ...formData };
+      // handle creating a new person
+      if (payload.person === '__new') {
+        const pname = payload.new_person_name;
+        if (pname) {
+          const pRes = await api.post('expenses/people/', { name: pname });
+          payload.person = pRes.data.id;
+        } else {
+          alert('Please provide a person name');
+          setLoading(false);
+          return;
+        }
+      }
+      // remove helper field
+      delete payload.new_person_name;
+      await api.post('expenses/expenses/', payload);
       navigate('/');
     } catch (error) {
       console.error('Error saving expense:', error);
@@ -135,6 +167,26 @@ const AddExpense = () => {
                   <option key={cat.id} value={cat.id}>{cat.category_name}</option>
                 ))}
               </select>
+            </div>
+
+            {/* Person */}
+            <div className="space-y-2">
+              <label className="text-sm font-semibold text-gray-700">Person / Contact</label>
+              <select
+                name="person"
+                className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary focus:border-transparent outline-none transition-all appearance-none bg-white"
+                value={formData.person || ''}
+                onChange={handleChange}
+              >
+                <option value="">No person</option>
+                {people.map(p => (
+                  <option key={p.id} value={p.id}>{p.name}</option>
+                ))}
+                <option value="__new">Create new...</option>
+              </select>
+              {formData.person === '__new' && (
+                <input type="text" placeholder="New person name" name="new_person_name" value={formData.new_person_name || ''} onChange={handleChange} className="w-full px-4 py-3 border border-gray-200 rounded-xl" />
+              )}
             </div>
 
             {/* Amount */}

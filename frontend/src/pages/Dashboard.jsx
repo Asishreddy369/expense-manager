@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useAuth } from '../context/AuthContext';
+import { Link } from 'react-router-dom';
 import api from '../api/axios';
 import { IndianRupee, TrendingUp, Layers, ArrowRight, Wallet, Clock, TrendingDown, PieChart as PieChartIcon, BarChart3 } from 'lucide-react';
 import { Chart as ChartJS, ArcElement, Tooltip, Legend, CategoryScale, LinearScale, BarElement, Title } from 'chart.js';
@@ -197,7 +198,7 @@ const Dashboard = () => {
           <h2 className="text-xl font-bold text-gray-900 mb-6">Expense Analysis</h2>
           <div className="h-64 flex items-center justify-center bg-gray-50 rounded-xl border-2 border-dashed border-gray-200">
              <div className="text-center">
-                <PieChart className="h-12 w-12 text-gray-300 mx-auto mb-2" />
+                <PieChartIcon className="h-12 w-12 text-gray-300 mx-auto mb-2" />
                 <p className="text-gray-400 text-sm font-medium">Real charts coming in Phase 2</p>
                 <p className="text-gray-300 text-xs italic mt-1">Start adding expenses to see the magic!</p>
              </div>

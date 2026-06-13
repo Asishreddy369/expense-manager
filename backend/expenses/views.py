@@ -4,8 +4,9 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from django.db.models import Sum
 from django.utils import timezone
-from .models import Category, Expense
-from .serializers import CategorySerializer, ExpenseSerializer
+from .models import Category, Expense, Person
+from .serializers import CategorySerializer, ExpenseSerializer, PersonSerializer
+from rest_framework import viewsets
 
 class CategoryViewSet(viewsets.ModelViewSet):
     serializer_class = CategorySerializer
@@ -26,7 +27,21 @@ class ExpenseViewSet(viewsets.ModelViewSet):
         category = self.request.query_params.get('category')
         if category:
             queryset = queryset.filter(category_id=category)
+        person = self.request.query_params.get('person')
+        if person:
+            queryset = queryset.filter(person_id=person)
         return queryset
+
+    def perform_create(self, serializer):
+        serializer.save(user=self.request.user)
+
+
+class PersonViewSet(viewsets.ModelViewSet):
+    serializer_class = PersonSerializer
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get_queryset(self):
+        return Person.objects.filter(user=self.request.user)
 
     def perform_create(self, serializer):
         serializer.save(user=self.request.user)

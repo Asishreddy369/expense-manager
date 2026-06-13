@@ -8,6 +8,8 @@ import Register from './pages/Register'
 import Dashboard from './pages/Dashboard'
 import AddExpense from './pages/AddExpense'
 import ExpenseList from './pages/ExpenseList'
+import PeopleList from './pages/PeopleList'
+import PersonDetail from './pages/PersonDetail'
 
 function App() {
   return (
@@ -25,6 +27,8 @@ function App() {
             <Route path="/" element={<Dashboard />} />
             <Route path="/expenses" element={<ExpenseList />} />
             <Route path="/add-expense" element={<AddExpense />} />
+            <Route path="/people" element={<PeopleList />} />
+            <Route path="/people/:id" element={<PersonDetail />} />
           </Route>
 
           <Route path="*" element={<Navigate to="/" />} />
