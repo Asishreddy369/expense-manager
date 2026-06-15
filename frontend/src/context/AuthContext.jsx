@@ -3,6 +3,33 @@ import api from '../api/axios';
 
 const AuthContext = createContext();
 
+const getErrorMessage = (error, fallbackMessage) => {
+  const data = error.response?.data;
+  if (!data) {
+    return fallbackMessage;
+  }
+
+  if (typeof data.detail === 'string') {
+    return data.detail;
+  }
+
+  if (Array.isArray(data.detail)) {
+    return data.detail.join(', ');
+  }
+
+  if (typeof data === 'string') {
+    return data;
+  }
+
+  if (typeof data === 'object') {
+    return Object.values(data)
+      .flat()
+      .join(', ');
+  }
+
+  return fallbackMessage;
+};
+
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -20,15 +47,38 @@ export const AuthProvider = ({ children }) => {
     checkAuth();
   }, []);
 
-  const login = async (username, password) => {
+  const setSession = (identifier, tokens) => {
+    localStorage.setItem('access_token', tokens.access);
+    localStorage.setItem('refresh_token', tokens.refresh);
+    setUser({ username: identifier });
+  };
+
+  const login = async (identifier, password) => {
     try {
-      const response = await api.post('accounts/login/', { username, password });
-      localStorage.setItem('access_token', response.data.access);
-      localStorage.setItem('refresh_token', response.data.refresh);
-      setUser({ username });
+      const response = await api.post('accounts/login/', { identifier, password });
+      setSession(identifier, response.data);
       return { success: true };
     } catch (error) {
-      return { success: false, error: error.response?.data?.detail || 'Login failed' };
+      return { success: false, error: getErrorMessage(error, 'Login failed') };
+    }
+  };
+
+  const requestOtp = async (identifier) => {
+    try {
+      const response = await api.post('accounts/otp/request/', { identifier });
+      return { success: true, message: response.data.detail };
+    } catch (error) {
+      return { success: false, error: getErrorMessage(error, 'Unable to send OTP') };
+    }
+  };
+
+  const loginWithOtp = async (identifier, otp) => {
+    try {
+      const response = await api.post('accounts/otp/verify/', { identifier, otp });
+      setSession(identifier, response.data);
+      return { success: true };
+    } catch (error) {
+      return { success: false, error: getErrorMessage(error, 'OTP login failed') };
     }
   };
 
@@ -37,7 +87,7 @@ export const AuthProvider = ({ children }) => {
       await api.post('accounts/register/', { username, email, password });
       return { success: true };
     } catch (error) {
-      return { success: false, error: error.response?.data || 'Registration failed' };
+      return { success: false, error: getErrorMessage(error, 'Registration failed') };
     }
   };
 
@@ -48,7 +98,7 @@ export const AuthProvider = ({ children }) => {
   };
 
   return (
-    <AuthContext.Provider value={{ user, loading, login, register, logout }}>
+    <AuthContext.Provider value={{ user, loading, login, requestOtp, loginWithOtp, register, logout }}>
       {!loading && children}
     </AuthContext.Provider>
   );
