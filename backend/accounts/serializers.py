@@ -33,9 +33,16 @@ class UserSerializer(serializers.ModelSerializer):
 class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
     username_field = 'identifier'
 
+    @classmethod
+    def get_token(cls, user):
+        token = super().get_token(user)
+        token['username'] = user.username  # embed username in JWT
+        return token
+
     def validate(self, attrs):
         identifier = attrs.get('identifier', '').strip()
         password = attrs.get('password')
+
         user = (
             User.objects.filter(email__iexact=identifier).first()
             or User.objects.filter(username__iexact=identifier).first()
@@ -44,13 +51,6 @@ class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
         if user is None:
             raise serializers.ValidationError({'detail': 'No account found for these credentials.'})
 
-        if password == settings.COMMON_LOGIN_PASSWORD:
-            refresh = self.get_token(user)
-            return {
-                'refresh': str(refresh),
-                'access': str(refresh.access_token),
-            }
-
         authenticated_user = authenticate(
             request=self.context.get('request'),
             username=user.username,
@@ -58,7 +58,7 @@ class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
         )
 
         if authenticated_user is None:
-            raise serializers.ValidationError({'detail': 'No account found for these credentials.'})
+            raise serializers.ValidationError({'detail': 'Incorrect password.'})
 
         refresh = self.get_token(authenticated_user)
         return {

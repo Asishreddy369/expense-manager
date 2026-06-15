@@ -55,10 +55,10 @@ class RequestOTPView(generics.GenericAPIView):
             ),
             from_email=None,
             recipient_list=[user.email],
-            fail_silently=False,
+            fail_silently=True,  # don't crash if email not configured
         )
 
-        return Response({'detail': f'OTP sent to {user.email}.'}, status=status.HTTP_200_OK)
+        return Response({'detail': f'OTP sent to {user.email}. (If email is not configured, use the common OTP from your .env)'}, status=status.HTTP_200_OK)
 
 
 class VerifyOTPView(generics.GenericAPIView):
@@ -80,6 +80,7 @@ class VerifyOTPView(generics.GenericAPIView):
             {
                 'refresh': str(refresh),
                 'access': str(refresh.access_token),
+                'username': user.username,
             },
             status=status.HTTP_200_OK,
         )
