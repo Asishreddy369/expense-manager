@@ -6,6 +6,7 @@ const api = axios.create({
   baseURL: API_BASE_URL,
 });
 
+// Attach access token to every request
 api.interceptors.request.use(
   (config) => {
     const token = localStorage.getItem('access_token');
@@ -15,6 +16,34 @@ api.interceptors.request.use(
     return config;
   },
   (error) => Promise.reject(error)
+);
+
+// Auto-refresh on 401
+api.interceptors.response.use(
+  (response) => response,
+  async (error) => {
+    const original = error.config;
+    if (error.response?.status === 401 && !original._retry) {
+      original._retry = true;
+      const refresh = localStorage.getItem('refresh_token');
+      if (refresh) {
+        try {
+          const res = await axios.post(`${API_BASE_URL}accounts/token/refresh/`, { refresh });
+          localStorage.setItem('access_token', res.data.access);
+          original.headers.Authorization = `Bearer ${res.data.access}`;
+          return api(original);
+        } catch {
+          localStorage.removeItem('access_token');
+          localStorage.removeItem('refresh_token');
+          window.location.href = '/login';
+        }
+      } else {
+        localStorage.removeItem('access_token');
+        window.location.href = '/login';
+      }
+    }
+    return Promise.reject(error);
+  }
 );
 
 export default api;

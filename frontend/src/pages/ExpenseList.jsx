@@ -67,8 +67,8 @@ const ExpenseList = () => {
     <div className="space-y-6">
       <header className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900">Expense History</h1>
-          <p className="text-gray-500 mt-1">Manage and track your past transactions.</p>
+          <h1 className="text-3xl font-extrabold bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">Expense History</h1>
+          <p className="text-gray-500 mt-1">Manage and track all your transactions.</p>
         </div>
         <div className="flex gap-3">
           <button 
@@ -192,13 +192,18 @@ const ExpenseList = () => {
                       <div className="text-xs text-gray-400 truncate max-w-[200px]">{expense.description || 'No description'}</div>
                     </td>
                     <td className="px-6 py-4">
-                      <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-50 text-primary">
+                      <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold bg-indigo-50 text-indigo-600">
                         {expense.category_name}
                       </span>
                     </td>
-                    <td className="px-6 py-4 text-sm font-bold text-gray-900">₹{expense.amount}</td>
+                    <td className="px-6 py-4 text-sm font-extrabold text-gray-900">₹{expense.amount}</td>
                     <td className="px-6 py-4">
-                       <span className="text-xs text-gray-500 bg-gray-100 px-2 py-1 rounded capitalize">{expense.payment_mode}</span>
+                      <span className={`text-xs font-semibold px-2.5 py-1 rounded-lg ${
+                        expense.payment_mode === 'UPI' ? 'bg-purple-100 text-purple-700' :
+                        expense.payment_mode === 'Cash' ? 'bg-green-100 text-green-700' :
+                        expense.payment_mode === 'Card' ? 'bg-blue-100 text-blue-700' :
+                        'bg-amber-100 text-amber-700'
+                      }`}>{expense.payment_mode}</span>
                     </td>
                     <td className="px-6 py-4 text-right">
                       <div className="flex justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
