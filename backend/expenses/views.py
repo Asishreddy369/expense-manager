@@ -112,9 +112,6 @@ class ExpenseAnalysisView(APIView):
 
 import io
 from django.http import HttpResponse
-from openpyxl import Workbook
-from reportlab.pdfgen import canvas
-from reportlab.lib.pagesizes import letter
 
 class ExportExpensesView(APIView):
     permission_classes = [permissions.AllowAny] # We will manually check token
@@ -135,6 +132,14 @@ class ExportExpensesView(APIView):
         expenses = Expense.objects.filter(user=user).order_by('-expense_date')
 
         if export_type == 'excel':
+            try:
+                from openpyxl import Workbook
+            except ImportError:
+                return Response(
+                    {"error": "Excel export dependency is not installed."},
+                    status=status.HTTP_503_SERVICE_UNAVAILABLE,
+                )
+
             wb = Workbook()
             ws = wb.active
             ws.title = "Expenses"
@@ -151,9 +156,18 @@ class ExportExpensesView(APIView):
             return response
 
         elif export_type == 'pdf':
+            try:
+                from reportlab.lib.pagesizes import letter
+                from reportlab.pdfgen import canvas
+            except ImportError:
+                return Response(
+                    {"error": "PDF export dependency is not installed."},
+                    status=status.HTTP_503_SERVICE_UNAVAILABLE,
+                )
+
             buffer = io.BytesIO()
             p = canvas.Canvas(buffer, pagesize=letter)
-            p.drawString(100, 750, f"Expense Report for {request.user.username}")
+            p.drawString(100, 750, f"Expense Report for {user.username}")
             y = 720
             p.drawString(100, y, "Date | Name | Category | Amount")
             y -= 20
