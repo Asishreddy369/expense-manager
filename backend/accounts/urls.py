@@ -1,5 +1,5 @@
 from django.urls import path
-from .views import RegisterView
+from .views import RegisterView, LoginView, RequestOTPView, VerifyOTPView
 from .token_serializers import CustomTokenObtainPairView
 from rest_framework_simplejwt.views import TokenRefreshView
 
