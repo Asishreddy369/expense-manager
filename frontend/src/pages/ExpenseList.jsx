@@ -1,16 +1,24 @@
 import React, { useEffect, useState } from 'react';
 import api from '../api/axios';
-import { Search, Filter, ArrowUpDown, Trash2, Edit3, ChevronLeft, ChevronRight, Wallet, PieChart as PieChartIcon, FileText, Calendar } from 'lucide-react';
+import { Search, Filter, Trash2, Edit3, ChevronLeft, ChevronRight,
+  Wallet, FileText, Calendar, X } from 'lucide-react';
+
+const PAYMENT_COLORS = {
+  UPI: 'bg-purple-100 text-purple-700',
+  Cash: 'bg-green-100 text-green-700',
+  Card: 'bg-blue-100 text-blue-700',
+  'Net Banking': 'bg-amber-100 text-amber-700',
+};
 
 const ExpenseList = () => {
-  const [expenses, setExpenses] = useState([]);
-  const [categories, setCategories] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [searchTerm, setSearchTerm] = useState('');
+  const [expenses, setExpenses]       = useState([]);
+  const [categories, setCategories]   = useState([]);
+  const [loading, setLoading]         = useState(true);
+  const [searchTerm, setSearchTerm]   = useState('');
   const [filterCategory, setFilterCategory] = useState('');
-  const [paymentFilter, setPaymentFilter] = useState('');
-  const [startDate, setStartDate] = useState('');
-  const [endDate, setEndDate] = useState('');
+  const [paymentFilter, setPaymentFilter]   = useState('');
+  const [startDate, setStartDate]     = useState('');
+  const [endDate, setEndDate]         = useState('');
 
   useEffect(() => {
     const fetchData = async () => {
@@ -34,7 +42,7 @@ const ExpenseList = () => {
     if (window.confirm('Are you sure you want to delete this expense?')) {
       try {
         await api.delete(`expenses/expenses/${id}/`);
-        setExpenses(expenses.filter(e => e.id !== id));
+        setExpenses(prev => prev.filter(e => e.id !== id));
       } catch (error) {
         console.error('Error deleting expense:', error);
       }
@@ -43,186 +51,189 @@ const ExpenseList = () => {
 
   const handleExport = (type) => {
     const token = localStorage.getItem('access_token');
-    window.open(`http://localhost:8000/api/expenses/export/?type=${type}&token=${token}`, '_blank');
+    const base = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000/api/';
+    window.open(`${base}expenses/export/?type=${type}&token=${token}`, '_blank');
+  };
+
+  const resetFilters = () => {
+    setSearchTerm(''); setFilterCategory(''); setPaymentFilter('');
+    setStartDate(''); setEndDate('');
   };
 
   const filteredExpenses = expenses.filter(e => {
-    const matchesSearch = e.expense_name.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesSearch   = e.expense_name.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesCategory = filterCategory ? e.category === parseInt(filterCategory) : true;
-    const matchesPayment = paymentFilter ? e.payment_mode === paymentFilter : true;
-    const matchesDate = (startDate ? e.expense_date >= startDate : true) && 
-                        (endDate ? e.expense_date <= endDate : true);
+    const matchesPayment  = paymentFilter ? e.payment_mode === paymentFilter : true;
+    const matchesDate     = (startDate ? e.expense_date >= startDate : true) &&
+                            (endDate   ? e.expense_date <= endDate   : true);
     return matchesSearch && matchesCategory && matchesPayment && matchesDate;
   });
+
+  const hasFilters = searchTerm || filterCategory || paymentFilter || startDate || endDate;
 
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-[60vh]">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-500"></div>
       </div>
     );
   }
 
   return (
-    <div className="space-y-6">
-      <header className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+    <div className="space-y-5 sm:space-y-6">
+
+      {/* Header */}
+      <header className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div>
-          <h1 className="text-3xl font-extrabold bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">Expense History</h1>
-          <p className="text-gray-500 mt-1">Manage and track all your transactions.</p>
+          <h1 className="text-2xl sm:text-3xl font-extrabold bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">
+            Expense History
+          </h1>
+          <p className="text-sm mt-0.5" style={{ color: 'var(--text-secondary)' }}>
+            Manage and track all your transactions.
+          </p>
         </div>
-        <div className="flex gap-3">
-          <button 
+        <div className="flex gap-2 shrink-0">
+          <button
             onClick={() => handleExport('pdf')}
-            className="px-4 py-2 bg-white border border-gray-200 rounded-xl text-sm font-semibold text-gray-700 hover:bg-gray-50 transition-all flex items-center gap-2 shadow-sm"
+            className="flex-1 sm:flex-none px-3 sm:px-4 py-2 rounded-xl text-sm font-semibold flex items-center justify-center gap-1.5 transition-all"
+            style={{ background: 'var(--bg-card)', border: '1px solid var(--border)', color: 'var(--text-secondary)' }}
           >
-            <FileText className="h-4 w-4 text-red-500" /> Download PDF
+            <FileText className="h-4 w-4 text-red-500 shrink-0" />
+            <span>PDF</span>
           </button>
-          <button 
+          <button
             onClick={() => handleExport('excel')}
-            className="px-4 py-2 bg-white border border-gray-200 rounded-xl text-sm font-semibold text-gray-700 hover:bg-gray-50 transition-all flex items-center gap-2 shadow-sm"
+            className="flex-1 sm:flex-none px-3 sm:px-4 py-2 rounded-xl text-sm font-semibold flex items-center justify-center gap-1.5 transition-all"
+            style={{ background: 'var(--bg-card)', border: '1px solid var(--border)', color: 'var(--text-secondary)' }}
           >
-            <FileText className="h-4 w-4 text-green-500" /> Export Excel
+            <FileText className="h-4 w-4 text-green-500 shrink-0" />
+            <span>Excel</span>
           </button>
         </div>
       </header>
 
-      {/* Filters & Search */}
-      <div className="bg-white p-4 rounded-2xl shadow-sm border border-gray-100 grid grid-cols-1 md:grid-cols-4 gap-4">
-        <div className="relative col-span-1 md:col-span-1">
-          <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-            <Search className="h-4 w-4 text-gray-400" />
+      {/* Filters */}
+      <div className="card p-4 space-y-3">
+        {/* Search + Reset row */}
+        <div className="flex gap-2">
+          <div className="relative flex-1">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 pointer-events-none" style={{ color: 'var(--text-muted)' }} />
+            <input
+              type="text"
+              placeholder="Search expenses..."
+              className="input-theme w-full pl-9 pr-3 py-2 border-2 rounded-xl outline-none text-sm transition-all"
+              value={searchTerm}
+              onChange={e => setSearchTerm(e.target.value)}
+            />
           </div>
-          <input
-            type="text"
-            placeholder="Search name..."
-            className="w-full pl-10 pr-4 py-2 border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary focus:border-transparent outline-none transition-all text-sm"
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-          />
+          {hasFilters && (
+            <button onClick={resetFilters}
+              className="px-3 py-2 rounded-xl text-sm font-medium flex items-center gap-1 transition-colors"
+              style={{ background: 'var(--input-bg)', border: '1px solid var(--border)', color: 'var(--text-muted)' }}>
+              <X className="h-3.5 w-3.5" /> Reset
+            </button>
+          )}
         </div>
 
-        <div className="relative">
-          <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-            <Filter className="h-4 w-4 text-gray-400" />
+        {/* Filter row — wraps nicely on mobile */}
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+          <div className="relative">
+            <Filter className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 pointer-events-none" style={{ color: 'var(--text-muted)' }} />
+            <select
+              className="input-theme w-full pl-9 pr-3 py-2 border-2 rounded-xl outline-none text-sm appearance-none"
+              value={filterCategory}
+              onChange={e => setFilterCategory(e.target.value)}
+            >
+              <option value="">All Categories</option>
+              {categories.map(cat => <option key={cat.id} value={cat.id}>{cat.category_name}</option>)}
+            </select>
           </div>
-          <select
-            className="w-full pl-10 pr-4 py-2 border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary focus:border-transparent outline-none transition-all text-sm appearance-none bg-white"
-            value={filterCategory}
-            onChange={(e) => setFilterCategory(e.target.value)}
-          >
-            <option value="">All Categories</option>
-            {categories.map(cat => (
-              <option key={cat.id} value={cat.id}>{cat.category_name}</option>
-            ))}
-          </select>
-        </div>
 
-        <div className="relative">
-          <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-            <Wallet className="h-4 w-4 text-gray-400" />
+          <div className="relative">
+            <Wallet className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 pointer-events-none" style={{ color: 'var(--text-muted)' }} />
+            <select
+              className="input-theme w-full pl-9 pr-3 py-2 border-2 rounded-xl outline-none text-sm appearance-none"
+              value={paymentFilter}
+              onChange={e => setPaymentFilter(e.target.value)}
+            >
+              <option value="">All Payments</option>
+              <option value="UPI">UPI</option>
+              <option value="Cash">Cash</option>
+              <option value="Card">Card</option>
+              <option value="Net Banking">Net Banking</option>
+            </select>
           </div>
-          <select
-            className="w-full pl-10 pr-4 py-2 border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary focus:border-transparent outline-none transition-all text-sm appearance-none bg-white"
-            value={paymentFilter}
-            onChange={(e) => setPaymentFilter(e.target.value)}
-          >
-            <option value="">All Payments</option>
-            <option value="UPI">UPI</option>
-            <option value="Cash">Cash</option>
-            <option value="Card">Card</option>
-            <option value="Net Banking">Net Banking</option>
-          </select>
-        </div>
 
-        <div className="relative">
-          <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-            <Calendar className="h-4 w-4 text-gray-400" />
+          <div className="relative">
+            <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 pointer-events-none" style={{ color: 'var(--text-muted)' }} />
+            <input
+              type="date"
+              className="input-theme w-full pl-9 pr-2 py-2 border-2 rounded-xl outline-none text-sm"
+              value={startDate}
+              onChange={e => setStartDate(e.target.value)}
+            />
           </div>
-          <input
-            type="date"
-            className="w-full pl-10 pr-4 py-2 border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary focus:border-transparent outline-none transition-all text-sm"
-            value={startDate}
-            onChange={(e) => setStartDate(e.target.value)}
-            placeholder="From"
-          />
-        </div>
 
-        <div className="relative">
-          <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-            <Calendar className="h-4 w-4 text-gray-400" />
+          <div className="relative">
+            <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 pointer-events-none" style={{ color: 'var(--text-muted)' }} />
+            <input
+              type="date"
+              className="input-theme w-full pl-9 pr-2 py-2 border-2 rounded-xl outline-none text-sm"
+              value={endDate}
+              onChange={e => setEndDate(e.target.value)}
+            />
           </div>
-          <input
-            type="date"
-            className="w-full pl-10 pr-4 py-2 border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary focus:border-transparent outline-none transition-all text-sm"
-            value={endDate}
-            onChange={(e) => setEndDate(e.target.value)}
-            placeholder="To"
-          />
         </div>
-
-        <button 
-           onClick={() => {setSearchTerm(''); setFilterCategory(''); setPaymentFilter(''); setStartDate(''); setEndDate('');}}
-           className="px-4 py-2 text-sm font-medium text-gray-500 hover:text-primary transition-colors flex items-center justify-center gap-2"
-        >
-          Reset Filters
-        </button>
       </div>
 
-      {/* Table Section */}
-      <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+      {/* ── Desktop table (md+) ── */}
+      <div className="card overflow-hidden hidden md:block">
         <div className="overflow-x-auto">
           <table className="w-full text-left">
-            <thead className="bg-gray-50 text-gray-500 text-xs uppercase tracking-wider">
+            <thead className="text-xs uppercase tracking-wider" style={{ background: 'var(--input-bg)', color: 'var(--text-muted)' }}>
               <tr>
-                <th className="px-6 py-4 font-semibold">Date</th>
-                <th className="px-6 py-4 font-semibold">Expense Name</th>
-                <th className="px-6 py-4 font-semibold">Category</th>
-                <th className="px-6 py-4 font-semibold">Amount</th>
-                <th className="px-6 py-4 font-semibold">Payment</th>
-                <th className="px-6 py-4 font-semibold text-right">Actions</th>
+                <th className="px-5 py-4 font-semibold">Date</th>
+                <th className="px-5 py-4 font-semibold">Expense Name</th>
+                <th className="px-5 py-4 font-semibold">Category</th>
+                <th className="px-5 py-4 font-semibold">Amount</th>
+                <th className="px-5 py-4 font-semibold">Payment</th>
+                <th className="px-5 py-4 font-semibold text-right">Actions</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-gray-100">
-              {filteredExpenses.length > 0 ? (
-                filteredExpenses.map((expense) => (
-                  <tr key={expense.id} className="hover:bg-gray-50 transition-colors group">
-                    <td className="px-6 py-4 text-sm text-gray-600">{expense.expense_date}</td>
-                    <td className="px-6 py-4">
-                      <div className="text-sm font-bold text-gray-900">{expense.expense_name}</div>
-                      <div className="text-xs text-gray-400 truncate max-w-[200px]">{expense.description || 'No description'}</div>
-                    </td>
-                    <td className="px-6 py-4">
-                      <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold bg-indigo-50 text-indigo-600">
-                        {expense.category_name}
-                      </span>
-                    </td>
-                    <td className="px-6 py-4 text-sm font-extrabold text-gray-900">₹{expense.amount}</td>
-                    <td className="px-6 py-4">
-                      <span className={`text-xs font-semibold px-2.5 py-1 rounded-lg ${
-                        expense.payment_mode === 'UPI' ? 'bg-purple-100 text-purple-700' :
-                        expense.payment_mode === 'Cash' ? 'bg-green-100 text-green-700' :
-                        expense.payment_mode === 'Card' ? 'bg-blue-100 text-blue-700' :
-                        'bg-amber-100 text-amber-700'
-                      }`}>{expense.payment_mode}</span>
-                    </td>
-                    <td className="px-6 py-4 text-right">
-                      <div className="flex justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                        <button className="p-2 text-gray-400 hover:text-primary transition-colors">
-                          <Edit3 className="h-4 w-4" />
-                        </button>
-                        <button 
-                          onClick={() => handleDelete(expense.id)}
-                          className="p-2 text-gray-400 hover:text-red-500 transition-colors"
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
-                ))
-              ) : (
+            <tbody style={{ color: 'var(--text-primary)' }}>
+              {filteredExpenses.length > 0 ? filteredExpenses.map(expense => (
+                <tr key={expense.id} className="border-t group transition-colors hover:bg-white/5" style={{ borderColor: 'var(--border)' }}>
+                  <td className="px-5 py-4 text-sm" style={{ color: 'var(--text-secondary)' }}>{expense.expense_date}</td>
+                  <td className="px-5 py-4">
+                    <p className="text-sm font-bold">{expense.expense_name}</p>
+                    <p className="text-xs truncate max-w-[200px]" style={{ color: 'var(--text-muted)' }}>{expense.notes || expense.description || ''}</p>
+                  </td>
+                  <td className="px-5 py-4">
+                    <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold bg-indigo-50 text-indigo-600">
+                      {expense.category_name}
+                    </span>
+                  </td>
+                  <td className="px-5 py-4 text-sm font-extrabold">₹{expense.amount}</td>
+                  <td className="px-5 py-4">
+                    <span className={`text-xs font-semibold px-2.5 py-1 rounded-lg ${PAYMENT_COLORS[expense.payment_mode] || 'bg-gray-100 text-gray-600'}`}>
+                      {expense.payment_mode}
+                    </span>
+                  </td>
+                  <td className="px-5 py-4 text-right">
+                    <div className="flex justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                      <button className="p-2 rounded-lg transition-colors" style={{ color: 'var(--text-muted)' }}>
+                        <Edit3 className="h-4 w-4" />
+                      </button>
+                      <button onClick={() => handleDelete(expense.id)}
+                        className="p-2 rounded-lg hover:text-red-500 transition-colors" style={{ color: 'var(--text-muted)' }}>
+                        <Trash2 className="h-4 w-4" />
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              )) : (
                 <tr>
-                  <td colSpan="6" className="px-6 py-10 text-center text-gray-400 italic">
+                  <td colSpan="6" className="px-5 py-10 text-center text-sm italic" style={{ color: 'var(--text-muted)' }}>
                     No expenses found matching your criteria.
                   </td>
                 </tr>
@@ -230,21 +241,56 @@ const ExpenseList = () => {
             </tbody>
           </table>
         </div>
-
-        {/* Pagination Placeholder */}
-        <div className="px-6 py-4 bg-gray-50 border-t border-gray-100 flex items-center justify-between">
-          <p className="text-sm text-gray-500 tracking-tight">
+        <div className="px-5 py-3 flex items-center justify-between border-t" style={{ borderColor: 'var(--border)', background: 'var(--input-bg)' }}>
+          <p className="text-sm" style={{ color: 'var(--text-muted)' }}>
             Showing <span className="font-semibold">{filteredExpenses.length}</span> results
           </p>
-          <div className="flex gap-2 text-primary">
-             <button className="p-2 rounded-lg hover:bg-white border border-transparent hover:border-gray-200 disabled:opacity-30" disabled>
-                <ChevronLeft className="h-5 w-5" />
-             </button>
-             <button className="p-2 rounded-lg hover:bg-white border border-transparent hover:border-gray-200 disabled:opacity-30" disabled>
-                <ChevronRight className="h-5 w-5" />
-             </button>
+          <div className="flex gap-1" style={{ color: 'var(--text-secondary)' }}>
+            <button className="p-2 rounded-lg disabled:opacity-30" disabled><ChevronLeft className="h-5 w-5" /></button>
+            <button className="p-2 rounded-lg disabled:opacity-30" disabled><ChevronRight className="h-5 w-5" /></button>
           </div>
         </div>
+      </div>
+
+      {/* ── Mobile cards (< md) ── */}
+      <div className="md:hidden space-y-3">
+        {filteredExpenses.length > 0 ? filteredExpenses.map(expense => (
+          <div key={expense.id} className="card p-4">
+            <div className="flex items-start justify-between gap-2">
+              <div className="min-w-0">
+                <p className="font-bold text-sm truncate" style={{ color: 'var(--text-primary)' }}>{expense.expense_name}</p>
+                <p className="text-xs mt-0.5" style={{ color: 'var(--text-muted)' }}>{expense.expense_date} • {expense.category_name}</p>
+                {(expense.notes || expense.description) && (
+                  <p className="text-xs mt-1 truncate" style={{ color: 'var(--text-muted)' }}>{expense.notes || expense.description}</p>
+                )}
+              </div>
+              <div className="text-right shrink-0">
+                <p className="font-extrabold text-sm" style={{ color: 'var(--text-primary)' }}>₹{expense.amount}</p>
+                <span className={`text-xs font-semibold px-2 py-0.5 rounded-lg mt-1 inline-block ${PAYMENT_COLORS[expense.payment_mode] || 'bg-gray-100 text-gray-600'}`}>
+                  {expense.payment_mode}
+                </span>
+              </div>
+            </div>
+            <div className="flex gap-2 mt-3 pt-3 border-t" style={{ borderColor: 'var(--border)' }}>
+              <button className="flex-1 py-1.5 rounded-lg text-xs font-semibold flex items-center justify-center gap-1 transition-colors"
+                style={{ border: '1px solid var(--border)', color: 'var(--text-secondary)' }}>
+                <Edit3 className="h-3.5 w-3.5" /> Edit
+              </button>
+              <button onClick={() => handleDelete(expense.id)}
+                className="flex-1 py-1.5 rounded-lg text-xs font-semibold flex items-center justify-center gap-1 text-red-500 bg-red-50 hover:bg-red-100 transition-colors">
+                <Trash2 className="h-3.5 w-3.5" /> Delete
+              </button>
+            </div>
+          </div>
+        )) : (
+          <div className="card p-8 text-center">
+            <Wallet className="h-10 w-10 mx-auto mb-2" style={{ color: 'var(--border)' }} />
+            <p className="text-sm" style={{ color: 'var(--text-muted)' }}>No expenses found matching your criteria.</p>
+          </div>
+        )}
+        <p className="text-sm text-center pb-2" style={{ color: 'var(--text-muted)' }}>
+          Showing <span className="font-semibold">{filteredExpenses.length}</span> results
+        </p>
       </div>
     </div>
   );

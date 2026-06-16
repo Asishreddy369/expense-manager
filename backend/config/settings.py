@@ -39,10 +39,10 @@ load_env_file(BASE_DIR / '.env')
 # See https://docs.djangoproject.com/en/4.2/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-u!1aynixds=vgcjbr)rbx*&40)+b1&sc7ypn3!toh9i^oz)dv7'
+SECRET_KEY = os.environ.get('SECRET_KEY', 'django-insecure-u!1aynixds=vgcjbr)rbx*&40)+b1&sc7ypn3!toh9i^oz)dv7')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = os.environ.get('DEBUG', 'True') == 'True'
 
 ALLOWED_HOSTS = [
     host.strip()
@@ -149,6 +149,7 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/4.2/howto/static-files/
 
 STATIC_URL = 'static/'
+STATIC_ROOT = BASE_DIR / 'staticfiles'
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/4.2/ref/settings/#default-auto-field
@@ -176,7 +177,14 @@ SIMPLE_JWT = {
 }
 
 # CORS configuration
-CORS_ALLOW_ALL_ORIGINS = True # Change this for production
+# CORS configuration
+# Set CORS_ALLOWED_ORIGINS in .env for production, e.g.:
+# CORS_ALLOWED_ORIGINS=https://yourdomain.com,https://www.yourdomain.com
+_cors_origins = os.getenv('CORS_ALLOWED_ORIGINS', '')
+if _cors_origins:
+    CORS_ALLOWED_ORIGINS = [o.strip() for o in _cors_origins.split(',') if o.strip()]
+else:
+    CORS_ALLOW_ALL_ORIGINS = True  # dev fallback only
 
 # Email configuration
 EMAIL_HOST = os.getenv('EMAIL_HOST', 'smtp.gmail.com')

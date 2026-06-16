@@ -4,8 +4,8 @@ import api from '../api/axios';
 import { Save, X, Calendar, Tag, IndianRupee, CreditCard, Loader2, Layers, Plus, ChevronDown, Wallet, TrendingDown, StickyNote } from 'lucide-react';
 import Modal from '../components/Modal';
 
-const inputCls = "w-full px-4 py-3 border-2 border-gray-100 rounded-xl focus:ring-0 focus:border-indigo-400 outline-none transition-all bg-white text-gray-800 placeholder-gray-400";
-const labelCls = "text-xs font-bold text-gray-500 uppercase tracking-wider flex items-center gap-1.5 mb-1.5";
+const inputCls = "input-theme w-full px-4 py-3 border-2 rounded-xl focus:ring-0 focus:border-indigo-400 outline-none transition-all placeholder-gray-400";
+const labelCls = "text-xs font-bold uppercase tracking-wider flex items-center gap-1.5 mb-1.5 text-gray-500 dark:text-gray-400";
 
 const PAYMENT_MODES = [
   { value: 'UPI', emoji: '📱', color: 'bg-purple-100 text-purple-700' },
@@ -109,12 +109,12 @@ const AddExpense = () => {
     <>
       <div className="max-w-3xl mx-auto">
         {/* Header */}
-        <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-indigo-600 via-purple-600 to-pink-500 p-8 text-white shadow-2xl shadow-indigo-500/30 mb-6">
+        <div className="relative overflow-hidden rounded-2xl sm:rounded-3xl bg-gradient-to-br from-indigo-600 via-purple-600 to-pink-500 p-5 sm:p-8 text-white shadow-2xl shadow-indigo-500/30 mb-6">
           <div className="absolute -top-8 -right-8 h-40 w-40 rounded-full bg-white/10 blur-2xl" />
           <div className="relative flex items-center justify-between">
             <div>
               <p className="text-indigo-200 text-xs font-bold uppercase tracking-widest mb-1">Expense Tracker</p>
-              <h1 className="text-3xl font-extrabold">Add New Expense</h1>
+              <h1 className="text-2xl sm:text-3xl font-extrabold">Add New Expense</h1>
               <p className="text-indigo-200 text-sm mt-1">Track every rupee you spend</p>
             </div>
             <button onClick={() => navigate(-1)} className="bg-white/20 hover:bg-white/30 backdrop-blur-sm p-2 rounded-xl transition-colors">
@@ -129,16 +129,16 @@ const AddExpense = () => {
           </div>
         )}
 
-        <form onSubmit={handleSubmit} className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+        <form onSubmit={handleSubmit} className="card overflow-hidden">
           <div className="p-6 space-y-6">
 
             {/* Row 1: Date + Name */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
               <div>
                 <label className={labelCls}><Calendar className="h-3.5 w-3.5 text-indigo-500" /> Date</label>
-                <div className="relative flex items-center border-2 border-gray-100 rounded-xl bg-white hover:border-indigo-300 transition-colors">
+                <div className="relative flex items-center border-2 rounded-xl hover:border-indigo-300 transition-colors" style={{ background: 'var(--input-bg)', borderColor: 'var(--input-border)' }}>
                   <Calendar className="h-4 w-4 text-indigo-400 shrink-0 ml-4" />
-                  <span className="flex-1 px-3 py-3 text-gray-800 font-medium text-sm select-none">
+                  <span className="flex-1 px-3 py-3 font-medium text-sm select-none" style={{ color: 'var(--text-primary)' }}>
                     {formData.expense_date
                       ? new Date(formData.expense_date + 'T00:00:00').toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' })
                       : 'Select date'}
@@ -163,14 +163,13 @@ const AddExpense = () => {
                     <Calendar className="h-4 w-4" />
                   </button>
                 </div>
-                {/* Quick date shortcuts */}
+                {/* Quick date shortcuts — wraps on small screens */}
                 <div className="flex flex-wrap gap-1.5 mt-2">
                   {[
                     { label: 'Today', days: 0 },
                     { label: 'Yesterday', days: 1 },
                     { label: '2 days ago', days: 2 },
                     { label: 'Last week', days: 7 },
-                    { label: 'Last month', days: 30 },
                   ].map(({ label, days }) => {
                     const d = new Date();
                     d.setDate(d.getDate() - days);
@@ -178,11 +177,12 @@ const AddExpense = () => {
                     return (
                       <button key={label} type="button"
                         onClick={() => setFormData(prev => ({ ...prev, expense_date: val }))}
-                        className={`text-xs px-2.5 py-1 rounded-lg font-medium transition-all border ${
+                        className={`text-xs px-2 py-1 rounded-lg font-medium transition-all border ${
                           formData.expense_date === val
                             ? 'bg-indigo-600 text-white border-indigo-600 shadow-sm'
-                            : 'bg-white text-gray-500 border-gray-200 hover:border-indigo-400 hover:text-indigo-600'
-                        }`}>
+                            : 'border-gray-200 hover:border-indigo-400 hover:text-indigo-600'
+                        }`}
+                        style={formData.expense_date !== val ? { background: 'var(--input-bg)', color: 'var(--text-secondary)' } : {}}>
                         {label}
                       </button>
                     );
@@ -254,7 +254,8 @@ const AddExpense = () => {
                   {PAYMENT_MODES.map(m => (
                     <button key={m.value} type="button"
                       onClick={() => setFormData(prev => ({ ...prev, payment_mode: m.value }))}
-                      className={`flex items-center gap-2 px-3 py-2.5 rounded-xl border-2 text-sm font-semibold transition-all ${formData.payment_mode === m.value ? 'border-indigo-500 bg-indigo-50 text-indigo-700' : 'border-gray-100 hover:border-gray-200 text-gray-600'}`}>
+                      className={`flex items-center gap-2 px-3 py-2.5 rounded-xl border-2 text-sm font-semibold transition-all ${formData.payment_mode === m.value ? 'border-indigo-500 bg-indigo-50 text-indigo-700' : 'hover:border-gray-300'}`}
+                      style={formData.payment_mode !== m.value ? { borderColor: 'var(--border)', color: 'var(--text-secondary)', background: 'var(--input-bg)' } : {}}>
                       <span>{m.emoji}</span> {m.value}
                     </button>
                   ))}
@@ -276,7 +277,7 @@ const AddExpense = () => {
             </div>
 
             {/* Budget Tally */}
-            <div className="rounded-2xl border-2 border-dashed border-indigo-200 bg-indigo-50/50 p-4 space-y-3">
+            <div className="rounded-2xl border-2 border-dashed border-indigo-200 p-4 space-y-3" style={{ background: 'var(--input-bg)' }}>
               <label className={labelCls + " text-indigo-600"}>
                 <Wallet className="h-3.5 w-3.5 text-indigo-500" /> Total Money in Hand
                 <span className="text-indigo-300 normal-case font-normal ml-1">(optional — for tally)</span>
@@ -288,7 +289,7 @@ const AddExpense = () => {
                   min="0"
                   step="0.01"
                   placeholder="Enter total amount you have"
-                  className="w-full pl-8 pr-4 py-3 border-2 border-indigo-200 rounded-xl focus:ring-0 focus:border-indigo-500 outline-none transition-all bg-white text-gray-800 placeholder-gray-400"
+                  className="input-theme w-full pl-8 pr-4 py-3 border-2 border-indigo-200 rounded-xl focus:ring-0 focus:border-indigo-500 outline-none transition-all placeholder-gray-400"
                   value={totalBudget}
                   onChange={e => setTotalBudget(e.target.value)}
                 />
@@ -313,20 +314,20 @@ const AddExpense = () => {
                       </div>
 
                       {/* 3 stat boxes */}
-                      <div className="grid grid-cols-3 gap-3">
-                        <div className="bg-white rounded-xl p-3 text-center border border-indigo-100">
-                          <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1">Total</p>
-                          <p className="font-extrabold text-gray-800">₹{total.toLocaleString('en-IN')}</p>
+                      <div className="grid grid-cols-3 gap-2 sm:gap-3">
+                        <div className="rounded-xl p-2.5 sm:p-3 text-center border" style={{ background: 'var(--bg-card)', borderColor: 'var(--border)' }}>
+                          <p className="text-[10px] font-bold uppercase tracking-wider mb-1" style={{ color: 'var(--text-muted)' }}>Total</p>
+                          <p className="font-extrabold text-sm sm:text-base" style={{ color: 'var(--text-primary)' }}>₹{total.toLocaleString('en-IN')}</p>
                         </div>
-                        <div className="bg-white rounded-xl p-3 text-center border border-red-100">
+                        <div className="rounded-xl p-2.5 sm:p-3 text-center border border-red-100 bg-red-50">
                           <p className="text-[10px] font-bold text-red-400 uppercase tracking-wider mb-1 flex items-center justify-center gap-1">
-                            <TrendingDown className="h-3 w-3" /> Expense
+                            <TrendingDown className="h-3 w-3" /> Spent
                           </p>
-                          <p className="font-extrabold text-red-600">₹{spent.toLocaleString('en-IN')}</p>
+                          <p className="font-extrabold text-red-600 text-sm sm:text-base">₹{spent.toLocaleString('en-IN')}</p>
                         </div>
-                        <div className={`rounded-xl p-3 text-center border ${isOver ? 'bg-red-50 border-red-200' : 'bg-emerald-50 border-emerald-100'}`}>
+                        <div className={`rounded-xl p-2.5 sm:p-3 text-center border ${isOver ? 'bg-red-50 border-red-200' : 'bg-emerald-50 border-emerald-100'}`}>
                           <p className={`text-[10px] font-bold uppercase tracking-wider mb-1 ${isOver ? 'text-red-400' : 'text-emerald-500'}`}>Balance</p>
-                          <p className={`font-extrabold ${isOver ? 'text-red-600' : 'text-emerald-600'}`}>
+                          <p className={`font-extrabold text-sm sm:text-base ${isOver ? 'text-red-600' : 'text-emerald-600'}`}>
                             {isOver ? '-' : ''}₹{Math.abs(balance).toLocaleString('en-IN')}
                           </p>
                         </div>
@@ -345,9 +346,9 @@ const AddExpense = () => {
           </div>
 
           {/* Footer */}
-          <div className="px-6 py-4 bg-gray-50 border-t border-gray-100 flex gap-3">
+          <div className="px-4 sm:px-6 py-4 border-t flex gap-3" style={{ background: 'var(--input-bg)', borderColor: 'var(--border)' }}>
             <button type="button" onClick={() => navigate(-1)}
-              className="flex-1 py-3 rounded-xl border-2 border-gray-200 text-gray-600 font-bold hover:bg-gray-100 transition-all">
+              className="flex-1 py-3 rounded-xl border-2 font-bold transition-all" style={{ borderColor: 'var(--border)', color: 'var(--text-secondary)' }}>
               Cancel
             </button>
             <button type="submit" disabled={loading}
@@ -365,15 +366,16 @@ const AddExpense = () => {
             { label: 'Email', name: 'email', type: 'email' },
             { label: 'Phone', name: 'phone', type: 'tel' }].map(f => (
             <div key={f.name}>
-              <label className="text-sm font-semibold text-gray-700 block mb-1">{f.label}</label>
+              <label className="text-sm font-semibold block mb-1" style={{ color: 'var(--text-primary)' }}>{f.label}</label>
               <input type={f.type} name={f.name} required={f.required}
                 value={personForm[f.name]} onChange={e => setPersonForm({ ...personForm, [e.target.name]: e.target.value })}
-                className="w-full px-3 py-2.5 border-2 border-gray-100 rounded-xl outline-none focus:border-indigo-400 transition-all" />
+                className="input-theme w-full px-3 py-2.5 border-2 border-gray-100 rounded-xl outline-none focus:border-indigo-400 transition-all" />
             </div>
           ))}
           <div className="flex gap-3 pt-2">
             <button type="button" onClick={() => setShowPersonModal(false)}
-              className="flex-1 py-2.5 rounded-xl border-2 border-gray-200 text-gray-600 font-semibold hover:bg-gray-50">Cancel</button>
+              className="flex-1 py-2.5 rounded-xl border-2 font-semibold transition-colors"
+              style={{ borderColor: 'var(--border)', color: 'var(--text-secondary)' }}>Cancel</button>
             <button type="submit"
               className="flex-1 py-2.5 rounded-xl bg-gradient-to-r from-indigo-600 to-purple-600 text-white font-bold">Create</button>
           </div>

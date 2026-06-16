@@ -3,10 +3,12 @@ from rest_framework import viewsets, permissions, status
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from django.db.models import Sum
+from django.db.models.functions import TruncMonth
 from django.utils import timezone
 from .models import Category, Expense, Person
 from .serializers import CategorySerializer, ExpenseSerializer, PersonSerializer
-from rest_framework import viewsets
+import io
+from django.http import HttpResponse
 
 class CategoryViewSet(viewsets.ModelViewSet):
     serializer_class = CategorySerializer
@@ -85,7 +87,6 @@ class ExpenseAnalysisView(APIView):
         by_category = Expense.objects.filter(user=request.user).values('category__category_name').annotate(total=Sum('amount'))
         
         # 2. Monthly Trend (Last 6 months)
-        from django.db.models.functions import TruncMonth
         monthly_trend = Expense.objects.filter(user=request.user).annotate(month=TruncMonth('expense_date')).values('month').annotate(total=Sum('amount')).order_by('month')
         
         # 3. Monthly Comparison (This month vs Last month)
@@ -110,11 +111,8 @@ class ExpenseAnalysisView(APIView):
             }
         })
 
-import io
-from django.http import HttpResponse
-
 class ExportExpensesView(APIView):
-    permission_classes = [permissions.AllowAny] # We will manually check token
+    permission_classes = [permissions.AllowAny]  # Manual JWT check below — needed for file download links
 
     def get(self, request):
         token = request.query_params.get('token')
@@ -125,7 +123,7 @@ class ExportExpensesView(APIView):
         try:
             validated_token = JWTAuthentication().get_validated_token(token)
             user = JWTAuthentication().get_user(validated_token)
-        except:
+        except Exception:
             return Response({"error": "Invalid token"}, status=401)
 
         export_type = request.query_params.get('type', 'excel')

@@ -65,31 +65,31 @@ const Dashboard = () => {
   );
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-5 sm:space-y-8">
 
       {/* Hero Header */}
-      <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-indigo-600 via-purple-600 to-pink-500 p-8 text-white shadow-2xl shadow-indigo-500/30">
+      <div className="relative overflow-hidden rounded-2xl sm:rounded-3xl bg-gradient-to-br from-indigo-600 via-purple-600 to-pink-500 p-5 sm:p-8 text-white shadow-2xl shadow-indigo-500/30">
         <div className="absolute -top-10 -right-10 h-48 w-48 rounded-full bg-white/10 blur-2xl" />
         <div className="absolute -bottom-10 -left-10 h-40 w-40 rounded-full bg-white/10 blur-2xl" />
-        <div className="relative flex flex-col md:flex-row md:items-center justify-between gap-4">
-          <div>
-            <p className="text-indigo-200 text-sm font-medium uppercase tracking-widest mb-1">Dashboard</p>
-            <h1 className="text-4xl font-extrabold tracking-tight">
+        <div className="relative flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div className="min-w-0">
+            <p className="text-indigo-200 text-xs font-medium uppercase tracking-widest mb-1">Dashboard</p>
+            <h1 className="text-2xl sm:text-4xl font-extrabold tracking-tight truncate">
               Welcome back, {user?.username} 👋
             </h1>
-            <p className="mt-2 text-indigo-200">Here's your financial summary for today.</p>
-            <Link to="/add-expense" className="mt-4 inline-flex items-center gap-2 bg-white text-indigo-600 font-bold px-5 py-2.5 rounded-xl hover:bg-indigo-50 transition-all shadow-lg text-sm">
+            <p className="mt-1 sm:mt-2 text-indigo-200 text-sm">Here's your financial summary for today.</p>
+            <Link to="/add-expense" className="mt-3 sm:mt-4 inline-flex items-center gap-2 bg-white text-indigo-600 font-bold px-4 sm:px-5 py-2 sm:py-2.5 rounded-xl hover:bg-indigo-50 transition-all shadow-lg text-sm">
               + Add Expense
             </Link>
           </div>
           {analysis?.comparison && (
-            <div className="bg-white/20 backdrop-blur-sm rounded-2xl p-4 flex items-center gap-3 shrink-0">
+            <div className="bg-white/20 backdrop-blur-sm rounded-2xl p-3 sm:p-4 flex items-center gap-3 shrink-0 self-start sm:self-auto">
               <div className={`p-2 rounded-xl ${analysis.comparison.diff > 0 ? 'bg-red-400/30' : 'bg-green-400/30'}`}>
                 {analysis.comparison.diff > 0 ? <TrendingUp className="h-5 w-5" /> : <TrendingDown className="h-5 w-5" />}
               </div>
               <div>
                 <p className="text-xs text-indigo-200 uppercase font-bold tracking-wider">vs Last Month</p>
-                <p className="text-lg font-bold">{analysis.comparison.percent_diff}% {analysis.comparison.diff > 0 ? 'increase' : 'decrease'}</p>
+                <p className="text-base sm:text-lg font-bold">{analysis.comparison.percent_diff}% {analysis.comparison.diff > 0 ? 'increase' : 'decrease'}</p>
               </div>
             </div>
           )}
@@ -97,15 +97,15 @@ const Dashboard = () => {
       </div>
 
       {/* Stats Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-6">
         {cards.map((card, i) => (
-          <div key={i} className={`relative overflow-hidden rounded-2xl bg-gradient-to-br ${card.gradient} p-6 text-white shadow-xl ${card.shadow} hover:scale-[1.02] transition-transform`}>
+          <div key={i} className={`relative overflow-hidden rounded-2xl bg-gradient-to-br ${card.gradient} p-5 sm:p-6 text-white shadow-xl ${card.shadow} hover:scale-[1.02] transition-transform`}>
             <div className="absolute -top-4 -right-4 h-24 w-24 rounded-full bg-white/10" />
             <div className="flex items-center gap-4">
-              <div className="bg-white/20 p-3 rounded-xl backdrop-blur-sm">{card.icon}</div>
-              <div>
+              <div className="bg-white/20 p-3 rounded-xl backdrop-blur-sm shrink-0">{card.icon}</div>
+              <div className="min-w-0">
                 <p className="text-sm font-medium text-white/80">{card.title}</p>
-                <h3 className="text-3xl font-extrabold">{card.value}</h3>
+                <h3 className="text-2xl sm:text-3xl font-extrabold truncate">{card.value}</h3>
               </div>
             </div>
           </div>
@@ -113,35 +113,35 @@ const Dashboard = () => {
       </div>
 
       {/* Charts */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
-          <h2 className="text-lg font-bold text-gray-900 mb-4 flex items-center gap-2">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
+        <div className="card p-4 sm:p-6">
+          <h2 className="text-base sm:text-lg font-bold mb-4 flex items-center gap-2" style={{ color: 'var(--text-primary)' }}>
             <span className="bg-indigo-100 text-indigo-600 p-1.5 rounded-lg"><PieChartIcon className="h-4 w-4" /></span>
             Expenses by Category
           </h2>
-          <div className="h-64 flex items-center justify-center">
-            {pieData ? <Pie data={pieData} options={{ maintainAspectRatio: false, plugins: { legend: { position: 'bottom' } } }} /> :
-              <p className="text-gray-400 text-sm italic">Add expenses to see your chart</p>}
+          <div className="h-56 sm:h-64 flex items-center justify-center">
+            {pieData ? <Pie data={pieData} options={{ maintainAspectRatio: false, plugins: { legend: { position: 'bottom', labels: { boxWidth: 12, padding: 12 } } } }} /> :
+              <p className="text-sm italic" style={{ color: 'var(--text-muted)' }}>Add expenses to see your chart</p>}
           </div>
         </div>
-        <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
-          <h2 className="text-lg font-bold text-gray-900 mb-4 flex items-center gap-2">
+        <div className="card p-4 sm:p-6">
+          <h2 className="text-base sm:text-lg font-bold mb-4 flex items-center gap-2" style={{ color: 'var(--text-primary)' }}>
             <span className="bg-amber-100 text-amber-600 p-1.5 rounded-lg"><BarChart3 className="h-4 w-4" /></span>
             Monthly Trend
           </h2>
-          <div className="h-64 flex items-center justify-center">
+          <div className="h-56 sm:h-64 flex items-center justify-center">
             {barData ? <Bar data={barData} options={{ maintainAspectRatio: false, plugins: { legend: { display: false } } }} /> :
-              <p className="text-gray-400 text-sm italic">No monthly data yet</p>}
+              <p className="text-sm italic" style={{ color: 'var(--text-muted)' }}>No monthly data yet</p>}
           </div>
         </div>
       </div>
 
       {/* Recent + Features */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
         {/* Recent Transactions */}
-        <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
-          <div className="flex items-center justify-between mb-5">
-            <h2 className="text-lg font-bold text-gray-900 flex items-center gap-2">
+        <div className="card p-4 sm:p-6">
+          <div className="flex items-center justify-between mb-4 sm:mb-5">
+            <h2 className="text-base sm:text-lg font-bold flex items-center gap-2" style={{ color: 'var(--text-primary)' }}>
               <span className="bg-teal-100 text-teal-600 p-1.5 rounded-lg"><Clock className="h-4 w-4" /></span>
               Recent Transactions
             </h2>
@@ -149,28 +149,28 @@ const Dashboard = () => {
               View All <ArrowRight className="h-4 w-4" />
             </Link>
           </div>
-          <div className="space-y-3">
+          <div className="space-y-2 sm:space-y-3">
             {stats.recent_transactions.length > 0 ? stats.recent_transactions.map((tx, i) => (
-              <div key={tx.id} className="flex items-center justify-between p-3 rounded-xl hover:bg-gray-50 transition-colors">
-                <div className="flex items-center gap-3">
-                  <div className="h-10 w-10 rounded-xl flex items-center justify-center text-white font-bold text-sm"
+              <div key={tx.id} className="flex items-center justify-between p-2.5 sm:p-3 rounded-xl hover:bg-gray-50 dark:hover:bg-white/5 transition-colors">
+                <div className="flex items-center gap-3 min-w-0">
+                  <div className="h-9 w-9 sm:h-10 sm:w-10 rounded-xl flex items-center justify-center text-white font-bold text-sm shrink-0"
                     style={{ background: COLORS[i % COLORS.length] }}>
                     {tx.expense_name[0].toUpperCase()}
                   </div>
-                  <div>
-                    <p className="font-semibold text-gray-900 text-sm">{tx.expense_name}</p>
-                    <p className="text-xs text-gray-400">{tx.category_name} • {tx.expense_date}</p>
+                  <div className="min-w-0">
+                    <p className="font-semibold text-sm truncate" style={{ color: 'var(--text-primary)' }}>{tx.expense_name}</p>
+                    <p className="text-xs truncate" style={{ color: 'var(--text-muted)' }}>{tx.category_name} • {tx.expense_date}</p>
                   </div>
                 </div>
-                <div className="text-right">
-                  <p className="font-bold text-gray-900">₹{tx.amount}</p>
-                  <span className="text-[10px] bg-gray-100 text-gray-500 px-1.5 py-0.5 rounded uppercase">{tx.payment_mode}</span>
+                <div className="text-right shrink-0 ml-2">
+                  <p className="font-bold text-sm" style={{ color: 'var(--text-primary)' }}>₹{tx.amount}</p>
+                  <span className="text-[10px] px-1.5 py-0.5 rounded uppercase" style={{ background: 'var(--input-bg)', color: 'var(--text-muted)' }}>{tx.payment_mode}</span>
                 </div>
               </div>
             )) : (
               <div className="text-center py-8">
-                <Wallet className="h-10 w-10 text-gray-200 mx-auto mb-2" />
-                <p className="text-gray-400 text-sm">No transactions yet</p>
+                <Wallet className="h-10 w-10 mx-auto mb-2" style={{ color: 'var(--border)' }} />
+                <p className="text-sm" style={{ color: 'var(--text-muted)' }}>No transactions yet</p>
                 <Link to="/add-expense" className="text-indigo-600 text-sm font-semibold mt-1 inline-block">Add your first →</Link>
               </div>
             )}
@@ -178,16 +178,16 @@ const Dashboard = () => {
         </div>
 
         {/* Features showcase */}
-        <div className="bg-gradient-to-br from-slate-900 to-indigo-950 rounded-2xl p-6 text-white">
-          <div className="flex items-center gap-2 mb-5">
+        <div className="bg-gradient-to-br from-slate-900 to-indigo-950 rounded-2xl p-4 sm:p-6 text-white">
+          <div className="flex items-center gap-2 mb-4 sm:mb-5">
             <Star className="h-5 w-5 text-yellow-400 fill-yellow-400" />
-            <h2 className="text-lg font-bold">What You Can Do</h2>
+            <h2 className="text-base sm:text-lg font-bold">What You Can Do</h2>
           </div>
-          <div className="grid grid-cols-1 gap-4">
+          <div className="grid grid-cols-1 gap-3 sm:gap-4">
             {features.map((f, i) => (
               <div key={i} className="flex items-start gap-3 bg-white/5 rounded-xl p-3 hover:bg-white/10 transition-colors">
                 <div className={`bg-gradient-to-br ${f.color} p-2 rounded-lg shrink-0`}>{f.icon}</div>
-                <div>
+                <div className="min-w-0">
                   <p className="font-bold text-sm">{f.title}</p>
                   <p className="text-xs text-slate-400 mt-0.5">{f.desc}</p>
                 </div>
