@@ -177,14 +177,16 @@ SIMPLE_JWT = {
 }
 
 # CORS configuration
-# CORS configuration
-# Set CORS_ALLOWED_ORIGINS in .env for production, e.g.:
-# CORS_ALLOWED_ORIGINS=https://yourdomain.com,https://www.yourdomain.com
 _cors_origins = os.getenv('CORS_ALLOWED_ORIGINS', '')
 if _cors_origins:
     CORS_ALLOWED_ORIGINS = [o.strip() for o in _cors_origins.split(',') if o.strip()]
 else:
     CORS_ALLOW_ALL_ORIGINS = True  # dev fallback only
+
+# Allow all Vercel preview deployment URLs automatically
+CORS_ALLOWED_ORIGIN_REGEXES = [
+    r"^https://.*\.vercel\.app$",
+]
 
 # Email configuration
 EMAIL_HOST = os.getenv('EMAIL_HOST', 'smtp.gmail.com')
