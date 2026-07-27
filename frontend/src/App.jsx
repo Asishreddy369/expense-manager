@@ -14,8 +14,6 @@ import PersonDetail from './pages/PersonDetail'
 export const ThemeContext = React.createContext()
 
 
-
-
 function App() {
   const [dark, setDark] = useState(() => localStorage.getItem('theme') === 'dark')
 
